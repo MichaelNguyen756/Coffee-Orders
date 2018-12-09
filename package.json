@@ -1,0 +1,10 @@
+{
+  "name": "Coffee-Orders",
+  "version": "1.0.0",
+  "main": "index.js",
+  "author": "MichaelNguyen756 <michael.nguyen756@gmail.com>",
+  "license": "MIT",
+  "devDependencies": {
+    "jasmine": "^3.3.1"
+  }
+}
