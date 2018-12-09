@@ -62,4 +62,77 @@ describe("Order", function() {
 			expect(order.gst()).toEqual(14.50/10);
 		});
 	});
+
+	describe("Applying vouchers to orders", function() {
+		it("should apply a 10% voucher", function() {
+			order.addTenPercentOffVoucher();
+
+			expect(order.hasTenPercentOffVoucherApplied()).toBe(true);
+		});
+
+		it("should apply a 2 for 1 voucher", function() {
+			order.addTwoForOneVoucher();
+			expect(order.hasTwoForOneVoucherApplied()).toBe(true);
+		});
+
+		it("should apply a 10% voucher while the other voucher is removed", function() {
+			order.addTwoForOneVoucher();
+			order.addTenPercentOffVoucher();
+
+			expect(order.hasTenPercentOffVoucherApplied()).toBe(true);
+		});
+
+		it("should apply a 2 for 1 voucher while the other voucher is removed", function() {
+			order.addTenPercentOffVoucher();
+			order.addTwoForOneVoucher();
+
+			expect(order.hasTwoForOneVoucherApplied()).toBe(true);
+		});
+
+		it("should apply a 10% discount on the total order", function() {
+			var largeCappuccino = new Coffee();
+			var soyFlatWhite = new Coffee();
+
+			largeCappuccino.makeLarge();
+			soyFlatWhite.addSoy();
+
+			order.add(largeCappuccino).add(soyFlatWhite);
+			order.addTenPercentOffVoucher();
+
+			expect(order.hasTenPercentOffVoucherApplied()).toBe(true);
+
+			expect(order.total()).toEqual(7.20);
+			expect(order.gst()).toEqual(0.72);
+		});
+
+		it("should apply a 2 for 1 voucher on the total order (i.e. only the cheapest coffee is not considered)", function() {
+			var largeCappuccino = new Coffee();
+			var flatWhite = new Coffee();
+
+			largeCappuccino.makeLarge();
+
+			order.add(largeCappuccino).add(flatWhite);
+			order.addTwoForOneVoucher();
+
+			expect(order.hasTwoForOneVoucherApplied()).toBe(true);
+
+			expect(order.total()).toEqual(4);
+			expect(order.gst()).toEqual(0.4);
+		});
+
+		it("should throw an exception if a 2 and 1 voucher is applied, however the number of coffees on the order is 1", function() {
+			order.add(coffee);
+			order.addTwoForOneVoucher();
+			expect(function () { order.total() }).toThrowError(Error, "cannot apply two for one voucher if the number of coffees ordered is not 2");
+		});
+
+		it("should throw an exception if a 2 and 1 voucher is applied, however the number of coffees on the order is more than 2", function() {
+			var cappuccino = new Coffee();
+			var flatWhite = new Coffee();
+
+			order.add(coffee).add(cappuccino).add(flatWhite);
+			order.addTwoForOneVoucher();
+			expect(function () { order.total() }).toThrowError(Error, "cannot apply two for one voucher if the number of coffees ordered is not 2");
+		});
+	});
 });
